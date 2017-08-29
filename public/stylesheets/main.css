@@ -1,0 +1,58 @@
+/*Footer*/
+footer {
+  margin-top: 5rem;
+}
+i.fa.fa-github {
+  margin-left: 15px;
+  margin-top:5px;
+  font-size: 3.5em;
+  vertical-align: middle;
+}
+a.glyphicon.glyphicon-envelope {
+  margin-left: 10px;
+  margin-top:5px;
+  font-size: 2.5em;
+  top: 0.5em;
+}
+/* End Footer*/
+body {
+  background:  #6677f9;
+  margin: 0px;
+  padding: 0px;
+}
+h1 {
+  text-align: center;
+  margin: 30px auto;
+  width: 400px;
+  height: 40px;
+  color: white;
+  font-family: Times, serif;
+  background-color: color|transparent|initial|inherit;
+}
+.main {
+  background: #6677f9;
+  height: 800px;
+  margin: 0px auto;
+}
+
+.boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+div.tooltip {
+  z-index: 5;
+  position: absolute;
+  text-align: center;
+  width: 17%;
+  color: #FFFFCC;
+  font-family: Times, serif;
+  font-size: 10px;
+  background: #bc144c;
+  padding: 0px;
+  margin: 0px;
+  border-radius: 5px;
+  pointer-events: none;
+}

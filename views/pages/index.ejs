@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ../partials/header.ejs %>
+</head>
+<body>
+  <div class="container-fluid">
+    <h1>Global Meteor Strikes</h1>
+    <div class="main"></div>
+  </div>
+ <footer>
+   <% include ../partials/footer.ejs %>
+   <script>
+   (function() {
+     const url = "//raw.githubusercontent.com/Sufflavus/CodepenExamples/master/14_MeteoriteLanding/world-50m.json"
+
+     const meteorite = "//raw.githubusercontent.com/Sufflavus/CodepenExamples/master/14_MeteoriteLanding/meteorite-strike-data.json"
+
+     let div = d3.select("body").append("div")
+       .attr("class", "tooltip")
+       .style("opacity", 1)
+
+     let rect = d3.select(".main").node().getBoundingClientRect()
+
+     let width = rect.width
+     let height = rect.height
+     let hue = {};
+     let projection = d3.geo.mercator()
+       .translate([width / 2, height / 2])
+       .scale((width - 1) / 2 / Math.PI);
+
+     let zoom = d3.behavior.zoom()
+       .scaleExtent([1, 8])
+       .on("zoom", zoomed);
+
+     let path = d3.geo.path()
+       .projection(projection);
+
+     let svg = d3.select(".main")
+       .append("svg")
+       .attr({
+         width: width,
+         height: height
+       })
+       .attr('background', '#9EC7F3')
+       .append("g")
+       .attr('position', 'fixed')
+
+     let g = svg.append("g");
+
+     svg.call(zoom).call(zoom.event);
+
+     // world map is based on example https://bl.ocks.org/mbostock/8fadc5ac9c2a9e7c5ba2
+     d3.json(url, function(error, world) {
+       if (error) {
+         throw error;
+       }
+
+       // draw map
+       g.append("path")
+         .datum({ type: "Sphere" })
+         .attr({
+           class: "sphere",
+           d: path
+         })
+         .attr('fill', '#6677f9')
+
+       g.append("path")
+         .datum(topojson.merge(world, world.objects.countries.geometries))
+         .attr({
+           class: "land",
+           d: path
+         })
+         .attr('fill', '#08dd5e')
+
+       g.append("path")
+         .datum(topojson.mesh(world, world.objects.countries, function(a, b) {
+           return a !== b;
+         }))
+         .attr({
+           class: "boundary",
+           d: path
+         });
+
+       d3.json(meteorite, function(error, data) {
+         if(error) {
+           return;
+         }
+
+         let meteors = data.features.filter(function(item) {
+           return !!item.geometry && (+item.properties.mass) > 0;
+         });
+
+         let maxMass = d3.max(meteors, function(d) {
+           return +d.properties.mass;
+         });
+
+         // draw meteors
+         g.selectAll("circle")
+           .data(meteors)
+           .enter()
+           .append("circle")
+             .attr({
+             cx: function (d) { return projection(d.geometry.coordinates)[0]; },
+             cy: function (d) { return projection(d.geometry.coordinates)[1]; },
+             r: newRadius
+             })
+            //.attr('fill', '#f93b71')
+            .attr('fill', hue)
+            .attr('stroke', '#7E142E')
+            .attr('stroke-width', '.25px')
+            .attr('fill-opacity', 0.8)
+           .on("mouseover", function(d) {
+             d3.select(this).attr({ class: " tooltip hovered" });
+            div.transition()
+               .duration(500)
+               .attr('stroke', '#7E142E')
+               .style("opacity", 0.8);
+            div.style("left", (d3.event.pageX + 20) + "px")
+               .style("top", (d3.event.pageY -80) + "px");
+               div.html("<h5>Name: "+ d.properties.name + "</h5>" + "<h5>Recclass: "+ d.properties.recclass + "</h5>" + "<h5>Mass: "+ d.properties.mass + "</h5>" + "<h5>Year: "+ (new Date(d.properties.year)).getFullYear() + "</h5>" + "<h5>Fall: "+ d.properties.fall + "</h5>" + "<h5>Name Type: "+ d.properties.nametype + "</h5>" + "<h5>Longitude: "+ d.properties.reclong + "</h5>" + "<h5>Latitude: "+ d.properties.reclat + "</h5>" )
+           })
+           .on("mouseout", function(d) {
+             d3.select(this).attr({ class: "" });
+             div.transition()
+               .duration(1000)
+               .style("opacity", 0);
+           });
+
+    function newRadius(d) {
+             let mass = d.properties.mass;
+             //console.log(mass);
+             if(mass > maxMass/10) {
+               return 25;
+              }
+             if(mass > maxMass/100) {
+               return 10;
+             }
+             if(mass > maxMass/1000) {
+               return 5;
+             }
+             if(mass > maxMass/10000) {
+               return 3;
+             }
+             return 2;
+
+           }
+
+    function hue(d){
+      let mass = Math.round(d.properties.mass);
+             console.log(mass);
+      if(mass >= 100000) {
+            return '#F033FF';
+             }
+             if((mass >= 50000) && (mass < 100000)) {
+               return '#3352FF';
+             }
+             if((mass >= 1000) && (mass < 50000)){
+               return '#ffaa32';
+             }
+             if(mass < 1000) {
+               return '#ff3273';
+             }
+         }
+
+       });
+     });
+
+     function zoomed() {
+       g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+     }
+   })()
+   </script>
+ </footer>
+</html>
+</body>
